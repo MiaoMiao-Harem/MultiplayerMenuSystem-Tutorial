@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Interfaces/OnlineSessionInterface.h"
+
+// Header files with '.generated' should be put in the end
 #include "MenuSystemCharacter.generated.h"
 
 
@@ -72,6 +75,17 @@ public:
 
 public:
 	// Smart pointer to hold the online session interface
-	TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface; // Using a TSharedPtr to class IOnlineSession with ThreadSafe option
-};
+	IOnlineSessionPtr OnlineSessionInterface; // TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface; // Using a TSharedPtr to class IOnlineSession with ThreadSafe option
 
+private:
+	// Delegate to bind callback function of session creation
+	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
+
+protected:
+	// Callback function wich will be called in response to successfully create a game session
+	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful); // It's bind to the CreateSessionCompleteDelegate so input&return type have to be correct
+
+	// Blueprint callable function to create game session
+	UFUNCTION(BlueprintCallable)
+	void CreateGameSession();
+};

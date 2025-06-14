@@ -11,7 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "OnlineSubsystem.h"
-#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -19,7 +19,10 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // AMenuSystemCharacter
 
-AMenuSystemCharacter::AMenuSystemCharacter()
+AMenuSystemCharacter::AMenuSystemCharacter() : // Initialize CreateSessionCompleteDelegate (and bind the callback function to it)
+	CreateSessionCompleteDelegate(
+		FOnCreateSessionCompleteDelegate::CreateUObject(this, &AMenuSystemCharacter::OnCreateSessionComplete) // Construct a new delegate that took in the address of callback function
+	)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -62,6 +65,7 @@ AMenuSystemCharacter::AMenuSystemCharacter()
 	{
 		OnlineSessionInterface = OnlineSubsystem->GetSessionInterface();
 
+		// Show debug message
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(
@@ -69,10 +73,81 @@ AMenuSystemCharacter::AMenuSystemCharacter()
 				15.6f,
 				FColor::Blue,
 				FString::Printf(TEXT("Found subsystem %s"), *OnlineSubsystem->GetSubsystemName().ToString())
-
 			);
 		}
 	}
+}
+
+// Callback function to verify that the session has indeed been created
+void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		// Show debug message
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Green,
+			FString::Printf(TEXT("Created session: %s"), *SessionName.ToString()));
+	}
+	else
+	{
+		// Show debug message
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString(TEXT("Failed to create session")));
+		}
+	}
+}
+
+
+void AMenuSystemCharacter::CreateGameSession()
+{
+	/* Check to see if OnlineSessionInterface is valid */
+	if (!OnlineSessionInterface.IsValid()) // The way to check if TShared Pointer is valid is by using the 'IsValid' function
+	{
+		return;
+	}
+	/* Check and destroy the existing session */
+	// Get the existing session pointer
+	auto ExistingSession = OnlineSessionInterface->GetNamedSession(
+		NAME_GameSession // If we always use this NAME_GameSession, then we'll always be checking to see if a session with this name exists
+	);
+	// Check to see if the existing session pointer is not null
+	if (ExistingSession != nullptr)
+	{
+		// Destroy the existing session
+		OnlineSessionInterface->DestroySession(
+			NAME_GameSession // Same as above
+		);
+	}
+	/* Create a new session */
+	// Add CreateSessionCompleteDelegate to OnlineSessionInterface's delegate list
+	OnlineSessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate); // Once a session is created, then the fallback function which bound to this delegate will be called
+	// Create and initialize a TSharedPtr to class FOnlineSessionSettings
+	TSharedPtr<FOnlineSessionSettings> SessionSettings = MakeShareable(
+		new FOnlineSessionSettings()
+	);
+	// Configure session settings
+	SessionSettings->bIsLANMatch = false; // Set to false if you want to connect over the internet
+	SessionSettings->NumPublicConnections = 4; // Determine how many players can connect to the game
+	SessionSettings->bAllowJoinInProgress = true; // Allow players to join when session is running
+	SessionSettings->bAllowJoinViaPresence = true; // Allow steam to search for sessions going on players' regions
+	SessionSettings->bShouldAdvertise = true; // Allow steam to advertise sessions
+	SessionSettings->bUsesPresence = true; // Allow players to find sessions going on their regions
+	//SessionSettings->bUseLobbiesIfAvailable = true; // Fix sessions finding issue
+	// Get the world's first local player
+	const ULocalPlayer *LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	// Create a session
+	OnlineSessionInterface->CreateSession(
+		*LocalPlayer->GetPreferredUniqueNetId(),
+		NAME_GameSession,
+		*SessionSettings
+	);
 }
 
 //////////////////////////////////////////////////////////////////////////
