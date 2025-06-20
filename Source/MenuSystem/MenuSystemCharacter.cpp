@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "Online/OnlineSessionNames.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -22,6 +23,9 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 AMenuSystemCharacter::AMenuSystemCharacter() : // Initialize CreateSessionCompleteDelegate (and bind the callback function to it)
 	CreateSessionCompleteDelegate(
 		FOnCreateSessionCompleteDelegate::CreateUObject(this, &AMenuSystemCharacter::OnCreateSessionComplete) // Construct a new delegate that took in the address of callback function
+	),
+	FindSessionsCompleteDelegate(
+		FOnFindSessionsCompleteDelegate::CreateUObject(this, &AMenuSystemCharacter::OnFindSessionsComplete) // Construct a new delegate that took in the address of callback function
 	)
 {
 	// Set size for collision capsule
@@ -78,37 +82,11 @@ AMenuSystemCharacter::AMenuSystemCharacter() : // Initialize CreateSessionComple
 	}
 }
 
-// Callback function to verify that the session has indeed been created
-void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
-{
-	if (bWasSuccessful)
-	{
-		// Show debug message
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Green,
-			FString::Printf(TEXT("Created session: %s"), *SessionName.ToString()));
-	}
-	else
-	{
-		// Show debug message
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Red,
-				FString(TEXT("Failed to create session")));
-		}
-	}
-}
-
 
 void AMenuSystemCharacter::CreateGameSession()
 {
 	/* Check to see if OnlineSessionInterface is valid */
-	if (!OnlineSessionInterface.IsValid()) // The way to check if TShared Pointer is valid is by using the 'IsValid' function
+	if (!OnlineSessionInterface.IsValid()) // The way to check if TSharedPtr is valid is by using the 'IsValid' function
 	{
 		return;
 	}
@@ -148,6 +126,90 @@ void AMenuSystemCharacter::CreateGameSession()
 		NAME_GameSession,
 		*SessionSettings
 	);
+}
+
+
+void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		// Show debug message
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Green,
+			FString::Printf(TEXT("Created session: %s"), *SessionName.ToString()));
+	}
+	else
+	{
+		// Show debug message
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString(TEXT("Failed to create session")));
+		}
+	}
+}
+
+
+void AMenuSystemCharacter::FindGameSessions()
+{
+	/* Check to see if OnlineSessionInterface is valid */
+	if (!OnlineSessionInterface.IsValid()) // The way to check if TSharedPtr is valid is by using the 'IsValid' function
+	{
+		return;
+	}
+	/* Find game sessions */
+	// Add FindSessionsCompleteDelegate to OnlineSessionInterface's delegate list
+	OnlineSessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegate); // Once all sessions are found, then the fallback function which bound to this delegate will be called
+	// Initialize a TSharedPtr to class FOnlineSessionSearch
+	SessionSearch = MakeShareable( // SessionSearch needs to be a member variable, so declaring local variable (TSharedPtr<FOnlineSessionSearch> SessionSearch) is not allowed
+		new FOnlineSessionSearch
+	);
+	// Configure search settings
+	SessionSearch->MaxSearchResults = 10000; // Set to a high number if using public steam server like Spacewar (AppID 480)
+	SessionSearch->bIsLanQuery = false; // Set to false if you want to connect over the internet
+	SessionSearch->QuerySettings.Set( // Make sure any session we find is using presence
+		SEARCH_PRESENCE, // Macro
+		true,
+		EOnlineComparisonOp::Equals
+	);
+	// Get the world's first local player
+	const ULocalPlayer *LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	// Find sessions
+	OnlineSessionInterface->FindSessions(
+		*LocalPlayer->GetPreferredUniqueNetId(),
+		SessionSearch.ToSharedRef()
+	);
+}
+
+
+void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
+{
+	/* Check to see if OnlineSessionInterface is valid */
+	if (!OnlineSessionInterface.IsValid()) // The way to check if TSharedPtr is valid is by using the 'IsValid' function
+	{
+		return;
+	}
+	/* Access search results */
+	for (auto Result : SessionSearch->SearchResults) // Traverse the sessions search results
+	{
+		FString ID = Result.GetSessionIdStr();
+		FString User = Result.Session.OwningUserName;
+		// Show debug message
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Cyan,
+				FString::Printf(TEXT("ID: %s, User: %s"), *ID, *User)
+			);
+		}
+	}	
 }
 
 //////////////////////////////////////////////////////////////////////////

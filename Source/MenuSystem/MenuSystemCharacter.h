@@ -80,12 +80,23 @@ public:
 private:
 	// Delegate to bind callback function of session creation
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
+	// TSharedPtr for callback function of session search to access
+	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+	// Delegate to bind callback function of session search
+	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
 
 protected:
-	// Callback function wich will be called in response to successfully create a game session
-	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful); // It's bind to the CreateSessionCompleteDelegate so input&return type have to be correct
-
 	// Blueprint callable function to create game session
 	UFUNCTION(BlueprintCallable)
 	void CreateGameSession();
+
+	// Callback function which will be called in response to successfully create a game session
+	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful); // It's bind to the CreateSessionCompleteDelegate so input&return type have to be correct
+
+	// Blueprint callable function to find game sessions
+	UFUNCTION(BlueprintCallable)
+	void FindGameSessions();
+
+	// Callback function which will be called in response to successfully find game sessions
+	void OnFindSessionsComplete(bool bWasSuccessful); // It's bind to the FindSessionsCompleteDelegate so input&return type have to be correct
 };
