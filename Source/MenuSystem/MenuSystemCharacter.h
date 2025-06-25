@@ -84,6 +84,8 @@ private:
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 	// Delegate to bind callback function of session search
 	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
+	// Delegate to bind callback function of session joint
+	FOnJoinSessionCompleteDelegate JoinSessionCompleteDelegate;
 
 protected:
 	// Blueprint callable function to create game session
@@ -99,4 +101,11 @@ protected:
 
 	// Callback function which will be called in response to successfully find game sessions
 	void OnFindSessionsComplete(bool bWasSuccessful); // It's bind to the FindSessionsCompleteDelegate so input&return type have to be correct
+
+	// Blueprint callable function to join game session
+	UFUNCTION(BlueprintCallable)
+	void JoinGameSession(FOnlineSessionSearchResult Result);
+
+	// Callback function which will be called in response to successfully join a game session
+	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result); // It's bind to the JoinSessionCompleteDelegate so input&return type have to be correct
 };

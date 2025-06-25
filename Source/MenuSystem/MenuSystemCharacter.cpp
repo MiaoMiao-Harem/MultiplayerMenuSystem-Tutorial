@@ -26,6 +26,9 @@ AMenuSystemCharacter::AMenuSystemCharacter() : // Initialize CreateSessionComple
 	),
 	FindSessionsCompleteDelegate(
 		FOnFindSessionsCompleteDelegate::CreateUObject(this, &AMenuSystemCharacter::OnFindSessionsComplete) // Construct a new delegate that took in the address of callback function
+	),
+	JoinSessionCompleteDelegate(
+		FOnJoinSessionCompleteDelegate::CreateUObject(this, &AMenuSystemCharacter::OnJoinSessionComplete) // Construct a new delegate that took in the address of callback function
 	)
 {
 	// Set size for collision capsule
@@ -118,6 +121,11 @@ void AMenuSystemCharacter::CreateGameSession()
 	SessionSettings->bShouldAdvertise = true; // Allow steam to advertise sessions
 	SessionSettings->bUsesPresence = true; // Allow players to find sessions going on their regions
 	//SessionSettings->bUseLobbiesIfAvailable = true; // Fix sessions finding issue
+	SessionSettings->Set( // Specify a match type so we can check that type once we've found the session
+		FName("MatchType"), // FName key to define a match type
+		FString("FreeForAll"), // FString value to define the match type
+		EOnlineDataAdvertisementType::ViaOnlineServiceAndPing // Session will be advertised via the online service and ping
+	);
 	// Get the world's first local player
 	const ULocalPlayer *LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	// Create a session
@@ -138,7 +146,18 @@ void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasS
 			-1,
 			15.f,
 			FColor::Green,
-			FString::Printf(TEXT("Created session: %s"), *SessionName.ToString()));
+			FString::Printf(TEXT("Created session: %s"), *SessionName.ToString())
+		);
+		/* Travel to lobby and open it as a listen server */
+		UWorld *World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel(
+				FString(
+					"Game/ThirdPerson/Maps/Lobby?listen" // Copy the relative path of umap, then replace 'Content' with 'Game' and delete '.umap', finally add '?listen' as specified option
+				)
+			);
+		}
 	}
 	else
 	{
@@ -199,6 +218,9 @@ void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 	{
 		FString ID = Result.GetSessionIdStr();
 		FString User = Result.Session.OwningUserName;
+		FString MatchType;
+		// Check if it has a matching key value pair that we are looking for
+		Result.Session.SessionSettings.Get(FName("MatchType"), MatchType);
 		// Show debug message
 		if (GEngine)
 		{
@@ -209,7 +231,79 @@ void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 				FString::Printf(TEXT("ID: %s, User: %s"), *ID, *User)
 			);
 		}
+		// Check MatchType value
+		if (MatchType == FString("FreeForAll"))
+		{
+			// Show debug message
+			if (GEngine)
+			{			
+				GEngine->AddOnScreenDebugMessage(
+					-1,
+					15.f,
+					FColor::Cyan,
+					FString::Printf(TEXT("Joining MatchType: %s"), *MatchType)
+				);
+			}
+			/* Join the game session */
+			JoinGameSession(Result);
+		}
 	}	
+}
+
+
+void AMenuSystemCharacter::JoinGameSession(FOnlineSessionSearchResult Result)
+{
+	/* Check to see if OnlineSessionInterface is valid */
+	if (!OnlineSessionInterface.IsValid()) // The way to check if TSharedPtr is valid is by using the 'IsValid' function
+	{
+		return;
+	}
+	/* Join the game session */
+	// Add JoinSessionCompleteDelegate to OnlineSessionInterface's delegate list
+	OnlineSessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate); // Once the session is joined, then the fallback function which bound to this delegate will be called
+	// Get the world's first local player
+	const ULocalPlayer *LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	// Join the session
+	OnlineSessionInterface->JoinSession(
+		*LocalPlayer->GetPreferredUniqueNetId(),
+		NAME_GameSession,
+		Result
+	);
+}
+
+
+void AMenuSystemCharacter::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	/* Check to see if OnlineSessionInterface is valid */
+	if (!OnlineSessionInterface.IsValid()) // The way to check if TSharedPtr is valid is by using the 'IsValid' function
+	{
+		return;
+	}
+	/* Get the IP address */
+	FString Address;
+	bool AddressExist = OnlineSessionInterface->GetResolvedConnectString(NAME_GameSession, Address); // This function will fill in that string with the address we need
+	if (AddressExist)
+	{
+		// Show debug message
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Yellow,
+				FString::Printf(TEXT("Connect string: %s"), *Address)
+			);
+		}
+		// Call ClientTravel
+		APlayerController *PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
+		if (PlayerController)
+		{
+			PlayerController->ClientTravel(
+				Address,
+				ETravelType::TRAVEL_Absolute
+			);
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
