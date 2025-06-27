@@ -102,8 +102,7 @@ protected:
 	// Callback function which will be called in response to successfully find game sessions
 	void OnFindSessionsComplete(bool bWasSuccessful); // It's bind to the FindSessionsCompleteDelegate so input&return type have to be correct
 
-	// Blueprint callable function to join game session
-	UFUNCTION(BlueprintCallable)
+	// Function to join game session (The reason I removed UFUNCTION(BlueprintCallable) is because FOnlineSessionSearchResult doesn't have UCLASS/USTRUCT/UENUM macro)
 	void JoinGameSession(FOnlineSessionSearchResult Result);
 
 	// Callback function which will be called in response to successfully join a game session
