@@ -1,4 +1,4 @@
-0. Open Editor, nevigate to `Plugins` in Content Drawer
+0. Open the editor, click `Content Drawer`, then nevigate to `Plugins`
 
 1. Enter the `Public` folder of the plugin (XXX C++ Classes) you want to add subsystem to, right click and choose `New C++ Class`
 
@@ -6,7 +6,7 @@
 
 3. Choose the target module in the dropdown of the comboBox on the left, edit the name and path if you want and click `Create Class`
 
-4. `Tools` -> `Refresh Visual Studio Code Project`, close the editor
+4. `Tools` -> `Refresh Visual Studio Code Project`, then close the editor
 
 5. Open XXX/Source/XXX/XXX.Build.cs, find PublicDependencyModuleNames.AddRange, add UMG requirements in the following format:
 ```

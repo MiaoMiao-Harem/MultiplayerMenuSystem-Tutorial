@@ -1,4 +1,4 @@
-0. Open Editor, nevigate to `C++ Classes` in Content Drawer
+0. Open the editor, click `Content Drawer`, then nevigate to `C++ Classes`
 
 1. Enter the folder with the name of the project, right click and choose `New C++ Class`
 
