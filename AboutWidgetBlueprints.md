@@ -1,6 +1,8 @@
-0. Open the editor, click `Content Drawer`, then nevigate to `Plugins`
+## How to add widget blueprint
 
-1. Enter the folder with the name of the plugin (XXX Content) you want to add blueprint to, right click and choose `User Interface` -> `Widget Blueprint`
+0. Open the editor, click `Content Drawer`, then nevigate to 'Content' or 'Plugins'
+
+1. Enter the folder (e.g. XXX Content) you want to add blueprint to, right click and choose `User Interface` -> `Widget Blueprint`
 
 2. Select the widget blueprint, edit the name if you want
 
