@@ -2,9 +2,9 @@
 
 # Unreal Multiplayer MenuSystem
 
-A multiplayer plugin with menu system for Unreal Engine 5
+A showcase & tutorial of [Unreal Engine 5 multiplayer menu system plugin](https://github.com/Spr-Aachen/Unreal-MultiplayerMenuSystem-Plugin.git)
 
-![Title](/docs/media/Title.png)
+![Cover](/docs/media/Cover.png)
 
 </div>
 
@@ -13,11 +13,11 @@ A multiplayer plugin with menu system for Unreal Engine 5
 
 ### 1. Setup Project
 
-- Create a C++ project if you don't have any
+1. Create a C++ project if you don't have any
 
-- Open the editor, `Edit` -> `Plugins`, type "Online Subsystem Steam" in the search bar, enable the Online Subsystem Steam plugin, then close the editor
+2. Open the editor, go to `Edit` -> `Plugins`, search for "Online Subsystem Steam", enable the plugin, then close the editor
 
-- Enter the 'Config' folder, open 'DefaultEngine.ini' and paste the following content
+3. Navigate to the 'Config' folder, open 'DefaultEngine.ini' and paste the following content:
     ```
     [/Script/Engine.GameEngine]
     +NetDriverDefinitions=(DefName="GameNetDriver",DriverClassName="OnlineSubsystemSteam.SteamNetDriver",DriverClassNameFallback="OnlineSubsystemUtils.IpNetDriver")
@@ -36,7 +36,7 @@ A multiplayer plugin with menu system for Unreal Engine 5
     NetConnectionClassName="OnlineSubsystemSteam.SteamNetConnection"
     ```
 
-- open 'DefaultGame.ini' and paste the following content
+4. Open 'DefaultGame.ini' and paste the following content
     ```
     [/Script/Engine.GameSession]
     MaxPlayers = 100 ; Set to the max number of players for game project we would like to have
@@ -44,17 +44,17 @@ A multiplayer plugin with menu system for Unreal Engine 5
 
 ### 2. Migrate Plugin
 
-- Clone Repository
+1. Clone the repository
     ```shell
     git clone https://github.com/Spr-Aachen/Unreal-MultiplayerMenuSystem.git
     ```
 
-- Enter the directory, copy the 'Plugins' folder
+2. Navigate to the 'Plugins' folder inside directory, copy the 'MultiplayerSessions' folder
 
-- Nevigate to the your target project directory, paste the 'Plugins' folder
+3. Navigate to your target project's directory, paste the 'Plugins' folder
 
 ### 3. Build Project
 
-- Launch .uproject file, if asking you whether to rebuild missing modules then click "Yes"
+1. Launch the .uproject file, if asking you whether to rebuild missing modules, select "Yes"
 
-- `Tools` -> `Generate Visual Studio Code Project`
+- Go to `Tools` -> `Generate Visual Studio Code Project`
