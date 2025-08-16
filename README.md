@@ -57,4 +57,4 @@ A showcase & tutorial of [Unreal Engine 5 multiplayer menu system plugin](https:
 
 1. Launch the .uproject file, if asking you whether to rebuild missing modules, select "Yes"
 
-- Go to `Tools` -> `Generate Visual Studio Code Project`
+2. Go to `Tools` -> `Generate/Refresh Visual Studio Code Project`
