@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "Interfaces/OnlineSessionInterface.h"
 
 // Header files with '.generated' should be put in the end
 #include "MenuSystemCharacter.generated.h"
@@ -72,39 +71,4 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-public:
-	// Smart pointer to hold the online session interface
-	IOnlineSessionPtr OnlineSessionInterface; // TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface; // Using a TSharedPtr to class IOnlineSession with ThreadSafe option
-
-private:
-	// Delegate to bind callback function of session creation
-	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
-	// TSharedPtr for callback function of session search to access
-	TSharedPtr<FOnlineSessionSearch> SessionSearch;
-	// Delegate to bind callback function of session search
-	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
-	// Delegate to bind callback function of session joint
-	FOnJoinSessionCompleteDelegate JoinSessionCompleteDelegate;
-
-protected:
-	// Blueprint callable function to create game session
-	UFUNCTION(BlueprintCallable)
-	void CreateGameSession();
-
-	// Callback function which will be called in response to successfully create a game session
-	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful); // It's bind to the CreateSessionCompleteDelegate so input&return type have to be correct
-
-	// Blueprint callable function to find game sessions
-	UFUNCTION(BlueprintCallable)
-	void FindGameSessions();
-
-	// Callback function which will be called in response to successfully find game sessions
-	void OnFindSessionsComplete(bool bWasSuccessful); // It's bind to the FindSessionsCompleteDelegate so input&return type have to be correct
-
-	// Function to join game session (The reason I removed UFUNCTION(BlueprintCallable) is because FOnlineSessionSearchResult doesn't have UCLASS/USTRUCT/UENUM macro)
-	void JoinGameSession(FOnlineSessionSearchResult Result);
-
-	// Callback function which will be called in response to successfully join a game session
-	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result); // It's bind to the JoinSessionCompleteDelegate so input&return type have to be correct
 };
