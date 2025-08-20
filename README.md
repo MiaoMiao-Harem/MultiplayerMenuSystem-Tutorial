@@ -13,7 +13,7 @@ A showcase & tutorial of [Unreal Engine 5 multiplayer menu system plugin](https:
 
 ### 1. Setup Project
 
-1. Create a C++ project if you don't have any
+1. Create a Unreal Engine 5 C++ project if you don't have any
 
 2. Open the editor, go to `Edit` -> `Plugins`, search for "Online Subsystem Steam", enable the plugin, then close the editor
 
@@ -40,16 +40,18 @@ A showcase & tutorial of [Unreal Engine 5 multiplayer menu system plugin](https:
     MaxPlayers = 100 ; Set to the max number of players for game project we would like to have
     ```
 
-### 2. Migrate Plugin
+### 2. Fetch Plugin
 
-1. Clone the repository
+1. Navigate to your target project's Plugins folder (or make one if it doesn't exist)
+
+2. Clone the repository or add as a submodule
     ```shell
-    git clone https://github.com/Spr-Aachen/Unreal-MultiplayerMenuSystem.git
+    git clone https://github.com/Spr-Aachen/Unreal-MultiplayerMenuSystem-Plugin.git MultiplayerSessions
     ```
-
-2. Navigate to the 'Plugins' folder inside directory, copy the 'MultiplayerSessions' folder
-
-3. Navigate to your target project's directory, paste the 'Plugins' folder
+    or
+    ```shell
+    git submodule add https://github.com/Spr-Aachen/Unreal-MultiplayerMenuSystem-Plugin.git MultiplayerSessions
+    ```
 
 ### 3. Build Project
 
